@@ -6,12 +6,13 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#define KEY(x) *((uint32_t*)x)
+#define KEY(x) *((uint32_t*)&x)
+#define KEYP(x) *((uint32_t*)x)
 
 int comp32(const void *elem1, const void *elem2) 
 {
-    uint32_t f = KEY(elem1);
-    uint32_t s = KEY(elem2);
+    uint32_t f = KEYP(elem1);
+    uint32_t s = KEYP(elem2);
     if (f > s) return  1;
     if (f < s) return -1;
     return 0;
@@ -37,7 +38,6 @@ uint64_t* cpu_sort(uint64_t* data, uint64_t n, int p) {
     uint64_t *S = (uint64_t*)malloc((p-1) * sizeof(*S));
     uint64_t *m = (uint64_t*)malloc(p * sizeof(*m));
     uint64_t *c = (uint64_t*)malloc(p * sizeof(*c));
-    uint64_t *h = (uint64_t*)malloc(p * sizeof(*h));
     uint64_t *final = (uint64_t*)malloc(n * sizeof(*final));
     
     #pragma omp parallel
@@ -106,11 +106,9 @@ uint64_t* cpu_sort(uint64_t* data, uint64_t n, int p) {
             }
             #pragma omp taskwait
             c[0] = 0;
-            h[0] = 0;
             for (int i = 1; i < p; i++)
             {
                 c[i] = c[i-1] + m[i-1];
-                h[i] = c[i];
             }
 
             for (int j = 0; j < p; j++)
